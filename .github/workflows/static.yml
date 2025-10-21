@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云计算平台组建 - 李立强</title>
+    <style>
+        /* 基础样式重置与全局设置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.9;
+            color: #2d3748;
+            background-color: #f7fafc;
+            padding: 30px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        /* 标题样式优化 */
+        h1 {
+            text-align: center;
+            color: #2b6cb0;
+            margin: 40px 0 20px;
+            padding-bottom: 20px;
+            border-bottom: 4px solid #3182ce;
+            font-size: 2.2rem;
+            letter-spacing: 0.5px;
+        }
+        h2 {
+            color: #2c5282;
+            margin: 50px 0 25px;
+            padding-left: 20px;
+            border-left: 5px solid #3182ce;
+            font-size: 1.6rem;
+        }
+        h3 {
+            color: #2d3748;
+            margin: 35px 0 18px;
+            font-size: 1.3rem;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        /* 个人信息卡片样式 */
+        .info-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            text-align: center;
+            margin: 20px 0 50px;
+        }
+        .info-card p {
+            font-size: 1.1rem;
+            color: #4a5568;
+            margin: 8px 0;
+        }
+        .info-card span {
+            font-weight: 600;
+            color: #2b6cb0;
+        }
+        /* 代码块样式升级 */
+        pre {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-size: 0.95rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        code {
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        /* 列表样式调整 */
+        ul, ol {
+            margin: 20px 0 20px 40px;
+        }
+        li {
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+        }
+        li strong {
+            color: #2b6cb0;
+        }
+        /* 分割线样式 */
+        hr {
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin: 60px 0;
+        }
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 15px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                padding-bottom: 15px;
+            }
+            h2 {
+                font-size: 1.4rem;
+                margin: 40px 0 20px;
+                padding-left: 15px;
+            }
+            h3 {
+                font-size: 1.2rem;
+                margin: 30px 0 15px;
+            }
+            .info-card {
+                padding: 20px;
+            }
+            pre {
+                padding: 15px;
+                font-size: 0.9rem;
+            }
+            ul, ol {
+                margin-left: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>云计算平台组建</h1>
+    
+    <!-- 个人信息卡片 -->
+    <div class="info-card">
+        <p>姓名：<span>李立强</span></p>
+        <p>学号：<span>23281300</span></p>
+        <p>日期：2025年10月21日</p>
+    </div>
+
+    <!-- 第一部分：大数据平台安装 -->
+    <h2>一、大数据平台安装</h2>
+    
+    <h3>1. Linux虚拟机安装</h3>
+    <ol>
+        <li><strong>发行商选择</strong>：安装Ubuntu-24.03系统，共部署三台虚拟机，分别命名为master、slave1、slave2。</li>
+        <li><strong>网络配置</strong>：设置固定IP地址，确保节点间可通信
+            <ul>
+                <li>master：192.168.226.132</li>
+                <li>slave1：192.168.226.133</li>
+                <li>slave2：192.168.226.134</li>
+            </ul>
+        </li>
+        <li><strong>SSH免密配置</strong>
+            <ul>
+                <li>在master节点生成密钥对：
+                    <pre><code>ssh-keygen -t rsa -P "" -f ~/.ssh/id_rsa</code></pre>
+                </li>
+                <li>分发公钥到所有节点：
+                    <pre><code>ssh-copy-id master
+ssh-copy-id slave1
+ssh-copy-id slave2</code></pre>
+                </li>
+                <li>验证免密登录：<code>ssh slave1</code> 测试连接是否成功</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>2. Hadoop组件安装</h3>
+    <ol>
+        <li><strong>组件下载</strong>：通过阿里云镜像站获取Hadoop-3.3.6版本压缩包，提高下载速度。</li>
+        <li><strong>解压配置</strong>
+            <ul>
+                <li>传输压缩包到虚拟机共享文件夹</li>
+                <li>执行解压命令：
+                    <pre><code>tar -xzvf hadoop-3.3.6.tar.gz</code></pre>
+                </li>
+                <li>移动到统一目录：
+                    <pre><code>sudo mv hadoop-3.3.6 /usr/local/hadoop</code></pre>
+                </li>
+            </ul>
+        </li>
+        <li><strong>JDK环境依赖</strong>：三台虚拟机均需安装JDK，验证命令：<code>java --version</code>，确保版本为1.8及以上。</li>
+    </ol>
+
+    <hr>
+
+    <!-- 第二部分：平台配置 -->
+    <h2>二、平台配置</h2>
+    
+    <h3>1. 环境变量配置</h3>
+    <ol>
+        <li>编辑配置文件：
+            <pre><code>vim ~/.bashrc</code></pre>
+        </li>
+        <li>添加环境变量内容：
+            <pre><code>export HADOOP_HOME=/usr/local/hadoop
+export PATH=$PATH:$HADOOP_HOME/bin
+export PATH=$PATH:$HADOOP_HOME/sbin
+export JAVA_HOME=/usr/lib/jvm/default-java</code></pre>
+        </li>
+        <li>使配置生效：
+            <pre><code>source ~/.bashrc</code></pre>
+        </li>
+    </ol>
+
+    <h3>2. 核心配置文件修改</h3>
+    <ol>
+        <li><strong>core-site.xml</strong>：配置HDFS主节点地址
+            <pre><code>&lt;configuration&gt;
+  &lt;property&gt;
+    &lt;name&gt;fs.defaultFS&lt;/name&gt;
+    &lt;value&gt;hdfs://master:9000&lt;/value&gt;
+  &lt;/property&gt;
+&lt;/configuration&gt;</code></pre>
+        </li>
+        <li><strong>hdfs-site.xml</strong>：设置副本数量和NameNode存储路径
+            <pre><code>&lt;configuration&gt;
+  &lt;property&gt;
+    &lt;name&gt;dfs.replication&lt;/name&gt;
+    &lt;value&gt;2&lt;/value&gt;
+  &lt;/property&gt;
+  &lt;property&gt;
+    &lt;name&gt;dfs.namenode.name.dir&lt;/name&gt;
+    &lt;value&gt;/usr/local/hadoop/data/nameNode&lt;/value&gt;
+  &lt;/property&gt;
+  &lt;property&gt;
+    &lt;name&gt;dfs.datanode.data.dir&lt;/name&gt;
+    &lt;value&gt;/usr/local/hadoop/data/dataNode&lt;/value&gt;
+  &lt;/property&gt;
+&lt;/configuration&gt;</code></pre>
+        </li>
+        <li><strong>yarn-site.xml</strong>：配置资源管理器
+            <pre><code>&lt;configuration&gt;
+  &lt;property&gt;
+    &lt;name&gt;yarn.resourcemanager.address&lt;/name&gt;
+    &lt;value&gt;master:8032&lt;/value&gt;
+  &lt;/property&gt;
+  &lt;property&gt;
+    &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;
+    &lt;value&gt;mapreduce_shuffle&lt;/value&gt;
+  &lt;/property&gt;
+&lt;/configuration&gt;</code></pre>
+        </li>
+        <li><strong>mapred-site.xml</strong>：指定MapReduce框架
+            <pre><code>&lt;configuration&gt;
+  &lt;property&gt;
+    &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
+    &lt;value&gt;yarn&lt;/value&gt;
+  &lt;/property&gt;
+&lt;/configuration&gt;</code></pre>
+        </li>
+        <li><strong>分发配置文件</strong>：将master节点配置同步到从节点
+            <pre><code>scp -r /usr/local/hadoop/etc/hadoop slave1:/usr/local/hadoop/etc/
+scp -r /usr/local/hadoop/etc/hadoop slave2:/usr/local/hadoop/etc/</code></pre>
+        </li>
+    </ol>
+
+    <hr>
+
+    <!-- 第三部分：启动测试 -->
+    <h2>三、启动测试</h2>
+    <ol>
+        <li><strong>格式化HDFS</strong>：首次启动前执行初始化
+            <pre><code>hdfs namenode -format</code></pre>
+        </li>
+        <li><strong>启动集群服务</strong>
+            <ul>
+                <li>启动HDFS：<code>start-dfs.sh</code></li>
+                <li>启动YARN：<code>start-yarn.sh</code></li>
+            </ul>
+        </li>
+        <li><strong>验证服务状态</strong>
+            <ul>
+                <li>查看进程：<code>jps</code>，确保NameNode、DataNode、ResourceManager进程正常运行</li>
+                <li>网页访问：打开浏览器访问<code>http://master:9870</code>，查看HDFS管理界面</li>
+            </ul>
+        </li>
+    </ol>
+
+    <hr>
+
+    <!-- 第四部分：ZooKeeper部署 -->
+    <h2>四、ZooKeeper部署</h2>
+    
+    <h3>1. 安装准备</h3>
+    <ol>
+        <li><strong>下载解压</strong>：从阿里云镜像站下载Zookeeper-3.9.4版本
+            <pre><code>tar -zxvf apache-zookeeper-3.9.4-bin.tar.gz
+sudo mv apache-zookeeper-3.9.4-bin /usr/local/zookeeper</code></pre>
+        </li>
+        <li><strong>创建数据目录</strong>：
+            <pre><code>mkdir /usr/local/zookeeper/zookeeper-data</code></pre>
+        </li>
+    </ol>
+
+    <h3>2. 配置文件设置</h3>
+    <ol>
+        <li>复制模板文件：
+            <pre><code>cp /usr/local/zookeeper/conf/zoo_sample.cfg /usr/local/zookeeper/conf/zoo.cfg</code></pre>
+        </li>
+        <li>编辑zoo.cfg文件：
+            <pre><code>tickTime=2000
+initLimit=10
+syncLimit=5
+dataDir=/usr/local/zookeeper/zookeeper-data
+clientPort=2181
+server.1=master:2888:3888
+server.2=slave1:2888:3888
+server.3=slave2:2888:3888</code></pre>
+        </li>
+        <li>设置节点ID：在每个节点的数据目录下创建myid文件
+            <ul>
+                <li>master：<code>echo 1 > /usr/local/zookeeper/zookeeper-data/myid</code></li>
+                <li>slave1：<code>echo 2 > /usr/local/zookeeper/zookeeper-data/myid</code></li>
+                <li>slave2：<code>echo 3 > /usr/local/zookeeper/zookeeper-data/myid</code></li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>3. 启动与验证</h3>
+    <ol>
+        <li><strong>启动服务</strong>：在所有节点执行
+            <pre><code>/usr/local/zookeeper/bin/zkServer.sh start</code></pre>
+        </li>
+        <li><strong>查看状态</strong>
+            <ul>
+                <li><code>zkServer.sh status</code></li>
+                <li>验证结果：一个节点为Leader模式，其余为Follower模式</li>
+            </ul>
+        </li>
+    </ol>
+
+</body>
+</html>
