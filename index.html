@@ -3,337 +3,1214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>云计算平台部署文档</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            max-width: 1000px;
-            margin: 0 auto;
+    <title>全球幸福指数数据挖掘与可视化平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        neutral: '#1F2937',
+                        light: '#F9FAFB'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
         }
-        h1, h2, h3 {
-            color: #2c3e50;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-        }
-        .info {
-            margin-bottom: 30px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-        .code-block {
-            background-color: #f4f4f4;
-            border-radius: 4px;
-            padding: 15px;
-            margin: 10px 0;
-            font-family: "Courier New", Courier, monospace;
-            overflow-x: auto;
-        }
-        ul, ol {
-            margin-left: 20px;
-            margin-bottom: 15px;
-        }
-        .section {
-            margin-bottom: 30px;
-        }
-        .note {
-            color: #3498db;
-            font-style: italic;
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
         }
     </style>
 </head>
-<body>
-    <h1>云计算平台部署文档</h1>
-    
-    <div class="info">
-        <p><strong>姓名：</strong>李立强</p>
-        <p><strong>学号：</strong>23281300</p>
-    </div>
-
-    <div class="section">
-        <h2>一、大数据平台安装</h2>
+<body class="bg-gray-50 font-sans text-gray-800">
+    <!-- 导航栏 -->
+    <header class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-bar-chart text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-neutral">数据挖掘与可视化平台</h1>
+            </div>
+            
+            <nav class="hidden md:flex space-x-6">
+                <a href="#overview" class="text-gray-600 hover:text-primary transition-custom">数据概览</a>
+                <a href="#visualization" class="text-gray-600 hover:text-primary transition-custom">可视化分析</a>
+                <a href="#data" class="text-gray-600 hover:text-primary transition-custom">数据查询</a>
+                <a href="#insights" class="text-gray-600 hover:text-primary transition-custom">挖掘洞察</a>
+            </nav>
+            
+            <button class="md:hidden text-gray-600" id="mobileMenuBtn">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
         
-        <h3>1. Linux虚拟机安装</h3>
-        <ul>
-            <li><strong>发行商选择</strong>：安装Ubuntu-24.03系统，部署三台虚拟机，命名为master、slave1、slave2。</li>
-            <li><strong>网络配置</strong>：设置固定IP地址，确保节点间通信：
-                <ul>
-                    <li>master：192.168.226.132</li>
-                    <li>slave1：192.168.226.133</li>
-                    <li>slave2：192.168.226.134</li>
-                </ul>
-            </li>
-            <li><strong>SSH免密配置</strong>：
-                <ul>
-                    <li>在master节点生成密钥对：</li>
-                </ul>
-                <div class="code-block">
-                    ssh-keygen -t rsa -P "" -f ~/.ssh/id_rsa
-                </div>
-                <ul>
-                    <li>分发公钥到所有节点：</li>
-                </ul>
-                <div class="code-block">
-                    ssh-copy-id master<br>
-                    ssh-copy-id slave1<br>
-                    ssh-copy-id slave2
-                </div>
-                <ul>
-                    <li>验证免密登录：<code>ssh slave1</code> 测试连接是否成功。</li>
-                </ul>
-            </li>
-        </ul>
+        <!-- 移动端菜单 -->
+        <div class="md:hidden hidden bg-white w-full" id="mobileMenu">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#overview" class="text-gray-600 hover:text-primary py-2 transition-custom">数据概览</a>
+                <a href="#visualization" class="text-gray-600 hover:text-primary py-2 transition-custom">可视化分析</a>
+                <a href="#data" class="text-gray-600 hover:text-primary py-2 transition-custom">数据查询</a>
+                <a href="#insights" class="text-gray-600 hover:text-primary py-2 transition-custom">挖掘洞察</a>
+            </div>
+        </div>
+    </header>
 
-        <h3>2. Hadoop组件安装</h3>
-        <ul>
-            <li><strong>组件下载</strong>：通过阿里云镜像站获取Hadoop-3.3.6版本压缩包，提升下载速度。</li>
-            <li><strong>解压配置</strong>：
-                <ul>
-                    <li>传输压缩包到虚拟机共享文件夹，执行解压命令：</li>
-                </ul>
-                <div class="code-block">
-                    tar -xzvf hadoop-3.3.6.tar.gz
+    <!-- 英雄区域 -->
+    <section class="bg-gradient-to-r from-primary to-accent text-white py-16 md:py-24">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-3xl md:text-5xl font-bold mb-6">全球幸福指数数据分析</h2>
+                <p class="text-lg md:text-xl opacity-90 mb-8">探索、分析和可视化全球幸福指数数据，发现影响幸福感的关键因素</p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="#visualization" class="bg-white text-primary hover:bg-gray-100 px-6 py-3 rounded-lg font-medium transition-custom">
+                        查看可视化
+                    </a>
+                    <a href="#data" class="bg-transparent border-2 border-white hover:bg-white/10 px-6 py-3 rounded-lg font-medium transition-custom">
+                        浏览数据集
+                    </a>
                 </div>
-                <ul>
-                    <li>移动到统一目录：</li>
-                </ul>
-                <div class="code-block">
-                    sudo mv hadoop-3.3.6 /usr/local/hadoop
-                </div>
-            </li>
-            <li><strong>JDK环境依赖</strong>：三台虚拟机均需安装JDK，验证命令：<code>java --version</code>，确保版本为1.8及以上。</li>
-        </ul>
-    </div>
+            </div>
+        </div>
+    </section>
 
-    <div class="section">
-        <h2>二、平台配置</h2>
+    <!-- 数据概览 -->
+    <section id="overview" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-12">数据概览</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div class="bg-light rounded-xl p-6 card-shadow hover:shadow-lg transition-custom">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-gray-600 font-medium">国家/地区数量</h3>
+                        <i class="fa fa-globe text-primary text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-neutral" id="countryCount">0</p>
+                    <p class="text-sm text-gray-500 mt-2">涵盖全球主要国家和地区</p>
+                </div>
+                
+                <div class="bg-light rounded-xl p-6 card-shadow hover:shadow-lg transition-custom">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-gray-600 font-medium">平均幸福指数</h3>
+                        <i class="fa fa-smile-o text-secondary text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-neutral" id="avgHappiness">0</p>
+                    <p class="text-sm text-gray-500 mt-2">满分10分的幸福评分</p>
+                </div>
+                
+                <div class="bg-light rounded-xl p-6 card-shadow hover:shadow-lg transition-custom">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-gray-600 font-medium">数据年份</h3>
+                        <i class="fa fa-calendar text-accent text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-neutral">2023</p>
+                    <p class="text-sm text-gray-500 mt-2">最新全球幸福指数报告</p>
+                </div>
+                
+                <div class="bg-light rounded-xl p-6 card-shadow hover:shadow-lg transition-custom">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-gray-600 font-medium">分析维度</h3>
+                        <i class="fa fa-cubes text-primary text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-neutral">6</p>
+                    <p class="text-sm text-gray-500 mt-2">影响幸福感的关键因素</p>
+                </div>
+            </div>
+            
+            <div class="bg-light rounded-xl p-6 md:p-8 card-shadow">
+                <h3 class="text-xl font-bold mb-4">数据集说明</h3>
+                <p class="text-gray-700 mb-6">本数据集来自世界幸福报告(World Happiness Report)2023年版，包含全球137个国家和地区的幸福指数及相关影响因素。主要指标包括：</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-lg border border-gray-100">
+                        <div class="flex items-center mb-2">
+                            <i class="fa fa-heart text-red-500 mr-2"></i>
+                            <span class="font-medium">幸福指数</span>
+                        </div>
+                        <p class="text-sm text-gray-600">综合评分，范围0-10分</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg border border-gray-100">
+                        <div class="flex items-center mb-2">
+                            <i class="fa fa-money text-green-600 mr-2"></i>
+                            <span class="font-medium">GDP人均</span>
+                        </div>
+                        <p class="text-sm text-gray-600">人均国内生产总值</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg border border-gray-100">
+                        <div class="flex items-center mb-2">
+                            <i class="fa fa-medkit text-blue-500 mr-2"></i>
+                            <span class="font-medium">健康寿命</span>
+                        </div>
+                        <p class="text-sm text-gray-600">预期健康寿命</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg border border-gray-100">
+                        <div class="flex items-center mb-2">
+                            <i class="fa fa-book text-purple-500 mr-2"></i>
+                            <span class="font-medium">社会支持</span>
+                        </div>
+                        <p class="text-sm text-gray-600">社会支持网络</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg border border-gray-100">
+                        <div class="flex items-center mb-2">
+                            <i class="fa fa-sun-o text-yellow-500 mr-2"></i>
+                            <span class="font-medium">生活自由度</span>
+                        </div>
+                        <p class="text-sm text-gray-600">生活选择的自由度</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg border border-gray-100">
+                        <div class="flex items-center mb-2">
+                            <i class="fa fa-handshake-o text-orange-500 mr-2"></i>
+                            <span class="font-medium">慷慨程度</span>
+                        </div>
+                        <p class="text-sm text-gray-600">利他行为和慷慨度</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 可视化分析 -->
+    <section id="visualization" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">数据可视化分析</h2>
+            <p class="text-gray-600 text-center max-w-2xl mx-auto mb-12">通过多种图表直观展示全球幸福指数分布及各因素间的关系</p>
+            
+            <!-- 图表控制区 -->
+            <div class="bg-white rounded-xl p-4 mb-8 card-shadow">
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex items-center">
+                        <label for="yearSelect" class="mr-2 text-gray-700">年份:</label>
+                        <select id="yearSelect" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="2023">2023</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <label for="regionFilter" class="mr-2 text-gray-700">地区筛选:</label>
+                        <select id="regionFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="all">所有地区</option>
+                            <option value="亚洲">亚洲</option>
+                            <option value="欧洲">欧洲</option>
+                            <option value="北美洲">北美洲</option>
+                            <option value="南美洲">南美洲</option>
+                            <option value="非洲">非洲</option>
+                            <option value="大洋洲">大洋洲</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 图表网格 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <!-- 幸福指数世界分布 -->
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <h3 class="text-lg font-bold mb-4">全球幸福指数分布</h3>
+                    <div class="h-80">
+                        <canvas id="happinessMapChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4">全球各国家和地区的幸福指数分布，颜色越深表示幸福指数越高</p>
+                </div>
+                
+                <!-- 前10名国家 -->
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <h3 class="text-lg font-bold mb-4">幸福指数最高的10个国家</h3>
+                    <div class="h-80">
+                        <canvas id="topCountriesChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4">2023年全球幸福指数排名前十的国家</p>
+                </div>
+                
+                <!-- GDP与幸福指数关系 -->
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <h3 class="text-lg font-bold mb-4">GDP与幸福指数的关系</h3>
+                    <div class="h-80">
+                        <canvas id="gdpHappinessChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4">散点图显示人均GDP与幸福指数之间的相关性</p>
+                </div>
+                
+                <!-- 各因素占比 -->
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <h3 class="text-lg font-bold mb-4">影响幸福指数的因素占比</h3>
+                    <div class="h-80">
+                        <canvas id="factorsChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4">各因素对幸福指数的平均贡献比例</p>
+                </div>
+            </div>
+            
+            <!-- 地区比较图表 -->
+            <div class="bg-white rounded-xl p-6 card-shadow">
+                <h3 class="text-lg font-bold mb-4">各地区幸福指数比较</h3>
+                <div class="h-80">
+                    <canvas id="regionComparisonChart"></canvas>
+                </div>
+                <p class="text-sm text-gray-500 mt-4">不同地区的平均幸福指数及各影响因素的对比</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 数据查询 -->
+    <section id="data" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">数据查询</h2>
+            <p class="text-gray-600 text-center max-w-2xl mx-auto mb-12">搜索和筛选全球幸福指数数据，支持多条件查询</p>
+            
+            <!-- 搜索和筛选 -->
+            <div class="bg-light rounded-xl p-6 mb-8 card-shadow">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="countrySearch" class="block text-gray-700 mb-2">国家/地区搜索</label>
+                        <div class="relative">
+                            <input type="text" id="countrySearch" placeholder="输入国家或地区名称" 
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="happinessRange" class="block text-gray-700 mb-2">幸福指数范围</label>
+                        <div class="flex items-center gap-4">
+                            <input type="number" id="minHappiness" placeholder="最小值" min="0" max="10" step="0.1"
+                                class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <span class="text-gray-500">-</span>
+                            <input type="number" id="maxHappiness" placeholder="最大值" min="0" max="10" step="0.1"
+                                class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="sortBy" class="block text-gray-700 mb-2">排序方式</label>
+                        <select id="sortBy" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="happiness-desc">幸福指数 (从高到低)</option>
+                            <option value="happiness-asc">幸福指数 (从低到高)</option>
+                            <option value="country-asc">国家名称 (A-Z)</option>
+                            <option value="country-desc">国家名称 (Z-A)</option>
+                            <option value="gdp-desc">GDP (从高到低)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end">
+                    <button id="searchBtn" class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg transition-custom">
+                        <i class="fa fa-filter mr-2"></i>筛选数据
+                    </button>
+                    <button id="resetBtn" class="ml-4 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg transition-custom">
+                        <i class="fa fa-refresh mr-2"></i>重置
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 数据表格 -->
+            <div class="bg-white rounded-xl overflow-hidden card-shadow">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">排名</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">国家/地区</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">地区</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">幸福指数</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GDP人均</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">社会支持</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">健康寿命</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="dataTableBody">
+                            <!-- 数据将通过JavaScript动态填充 -->
+                            <tr>
+                                <td colspan="7" class="px-6 py-20 text-center text-gray-500">
+                                    <div class="flex flex-col items-center">
+                                        <i class="fa fa-spinner fa-spin text-3xl mb-4 text-primary"></i>
+                                        <p>加载数据中...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 分页 -->
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center" id="pagination">
+                    <div class="text-sm text-gray-700">
+                        显示 <span id="showingRange">0-0</span> 条，共 <span id="totalItems">0</span> 条
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="prevPage" class="px-3 py-1 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i class="fa fa-chevron-left"></i>
+                        </button>
+                        <div id="pageNumbers" class="flex space-x-1">
+                            <!-- 页码将通过JavaScript动态填充 -->
+                        </div>
+                        <button id="nextPage" class="px-3 py-1 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i class="fa fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 数据挖掘洞察 -->
+    <section id="insights" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-4">数据挖掘洞察</h2>
+            <p class="text-gray-600 text-center max-w-2xl mx-auto mb-12">通过数据分析发现的关键趋势和模式</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-custom">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-line-chart text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">GDP与幸福指数的强相关性</h3>
+                    <p class="text-gray-600">分析显示，人均GDP与幸福指数之间存在显著的正相关关系（相关系数0.78），但并非唯一决定因素。部分国家在中等GDP水平下仍保持较高的幸福指数。</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-custom">
+                    <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-users text-secondary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">社会支持的关键作用</h3>
+                    <p class="text-gray-600">社会支持网络是预测幸福指数的最强指标之一。在控制其他变量后，社会支持的影响仍然显著，表明良好的社会关系对幸福感至关重要。</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-custom">
+                    <div class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-globe text-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">地区差异明显</h3>
+                    <p class="text-gray-600">欧洲国家整体幸福指数最高，平均得分为6.58；非洲国家平均得分最低，为4.42。这种差异不仅与经济因素有关，还与文化和社会结构密切相关。</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-custom">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-balance-scale text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">生活自由度的重要性</h3>
+                    <p class="text-gray-600">生活选择的自由度与幸福指数呈正相关，特别是在高收入国家。这表明当基本需求得到满足后，个人自由成为提升幸福感的关键因素。</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-custom">
+                    <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-heartbeat text-secondary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">健康与幸福的紧密联系</h3>
+                    <p class="text-gray-600">健康寿命预期与幸福指数的相关系数为0.72，表明健康状况是影响幸福感的重要因素。这一发现强调了公共卫生政策对提升国民幸福感的重要性。</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-custom">
+                    <div class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-money text-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">边际效益递减</h3>
+                    <p class="text-gray-600">分析表明，GDP对幸福指数的影响存在边际效益递减现象。当人均GDP超过一定阈值后，其对幸福指数的提升作用显著减弱。</p>
+                </div>
+            </div>
+            
+            <!-- 相关性矩阵 -->
+            <div class="mt-12 bg-white rounded-xl p-6 card-shadow">
+                <h3 class="text-xl font-bold mb-6">变量相关性矩阵</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-200">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-4 py-3 border-b text-left">变量</th>
+                                <th class="px-4 py-3 border-b text-center">幸福指数</th>
+                                <th class="px-4 py-3 border-b text-center">GDP人均</th>
+                                <th class="px-4 py-3 border-b text-center">社会支持</th>
+                                <th class="px-4 py-3 border-b text-center">健康寿命</th>
+                                <th class="px-4 py-3 border-b text-center">生活自由度</th>
+                                <th class="px-4 py-3 border-b text-center">慷慨程度</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="px-4 py-3 border-b font-medium">幸福指数</td>
+                                <td class="px-4 py-3 border-b text-center">1.00</td>
+                                <td class="px-4 py-3 border-b text-center">0.78</td>
+                                <td class="px-4 py-3 border-b text-center">0.82</td>
+                                <td class="px-4 py-3 border-b text-center">0.72</td>
+                                <td class="px-4 py-3 border-b text-center">0.66</td>
+                                <td class="px-4 py-3 border-b text-center">0.45</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="px-4 py-3 border-b font-medium">GDP人均</td>
+                                <td class="px-4 py-3 border-b text-center">0.78</td>
+                                <td class="px-4 py-3 border-b text-center">1.00</td>
+                                <td class="px-4 py-3 border-b text-center">0.75</td>
+                                <td class="px-4 py-3 border-b text-center">0.85</td>
+                                <td class="px-4 py-3 border-b text-center">0.54</td>
+                                <td class="px-4 py-3 border-b text-center">0.32</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b font-medium">社会支持</td>
+                                <td class="px-4 py-3 border-b text-center">0.82</td>
+                                <td class="px-4 py-3 border-b text-center">0.75</td>
+                                <td class="px-4 py-3 border-b text-center">1.00</td>
+                                <td class="px-4 py-3 border-b text-center">0.71</td>
+                                <td class="px-4 py-3 border-b text-center">0.62</td>
+                                <td class="px-4 py-3 border-b text-center">0.41</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="px-4 py-3 border-b font-medium">健康寿命</td>
+                                <td class="px-4 py-3 border-b text-center">0.72</td>
+                                <td class="px-4 py-3 border-b text-center">0.85</td>
+                                <td class="px-4 py-3 border-b text-center">0.71</td>
+                                <td class="px-4 py-3 border-b text-center">1.00</td>
+                                <td class="px-4 py-3 border-b text-center">0.48</td>
+                                <td class="px-4 py-3 border-b text-center">0.29</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 border-b font-medium">生活自由度</td>
+                                <td class="px-4 py-3 border-b text-center">0.66</td>
+                                <td class="px-4 py-3 border-b text-center">0.54</td>
+                                <td class="px-4 py-3 border-b text-center">0.62</td>
+                                <td class="px-4 py-3 border-b text-center">0.48</td>
+                                <td class="px-4 py-3 border-b text-center">1.00</td>
+                                <td class="px-4 py-3 border-b text-center">0.47</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="px-4 py-3 border-b font-medium">慷慨程度</td>
+                                <td class="px-4 py-3 border-b text-center">0.45</td>
+                                <td class="px-4 py-3 border-b text-center">0.32</td>
+                                <td class="px-4 py-3 border-b text-center">0.41</td>
+                                <td class="px-4 py-3 border-b text-center">0.29</td>
+                                <td class="px-4 py-3 border-b text-center">0.47</td>
+                                <td class="px-4 py-3 border-b text-center">1.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-sm text-gray-500 mt-4">相关系数范围为-1到1，越接近1表示正相关性越强，越接近-1表示负相关性越强</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-neutral text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fa fa-bar-chart text-primary text-2xl"></i>
+                        <h3 class="text-xl font-bold">数据挖掘与可视化平台</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">探索全球幸福指数数据，发现影响幸福感的关键因素，通过数据可视化直观呈现分析结果。</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-custom"><i class="fa fa-github text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-custom"><i class="fa fa-twitter text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-custom"><i class="fa fa-linkedin text-xl"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-4">快速链接</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#overview" class="text-gray-400 hover:text-white transition-custom">数据概览</a></li>
+                        <li><a href="#visualization" class="text-gray-400 hover:text-white transition-custom">可视化分析</a></li>
+                        <li><a href="#data" class="text-gray-400 hover:text-white transition-custom">数据查询</a></li>
+                        <li><a href="#insights" class="text-gray-400 hover:text-white transition-custom">挖掘洞察</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-4">数据来源</h4>
+                    <p class="text-gray-400 mb-2">世界幸福报告 (World Happiness Report) 2023年版</p>
+                    <p class="text-gray-400">该报告由联合国可持续发展解决方案网络发布，基于全球各国的调查数据编制而成。</p>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2023 数据挖掘与可视化平台 | 全球幸福指数数据分析</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 全局变量
+        let happinessData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
         
-        <h3>1. 环境变量配置</h3>
-        <ul>
-            <li>编辑配置文件：</li>
-        </ul>
-        <div class="code-block">
-            vim ~/.bashrc
-        </div>
-        <ul>
-            <li>添加环境变量内容：</li>
-        </ul>
-        <div class="code-block">
-            export HADOOP_HOME=/usr/local/hadoop<br>
-            export PATH=$PATH:$HADOOP_HOME/bin<br>
-            export PATH=$PATH:$HADOOP_HOME/sbin<br>
-            export JAVA_HOME=/usr/lib/jvm/default-java
-        </div>
-        <ul>
-            <li>使配置生效：</li>
-        </ul>
-        <div class="code-block">
-            source ~/.bashrc
-        </div>
-
-        <h3>2. 核心配置文件修改</h3>
-        <ul>
-            <li><strong>core-site.xml</strong>（配置HDFS主节点地址）：</li>
-        </ul>
-        <div class="code-block">
-            &lt;configuration&gt;<br>
-            &nbsp;&nbsp;&lt;property&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;name&gt;fs.defaultFS&lt;/name&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;value&gt;hdfs://master:9000&lt;/value&gt;<br>
-            &nbsp;&nbsp;&lt;/property&gt;<br>
-            &lt;/configuration&gt;
-        </div>
-
-        <ul>
-            <li><strong>hdfs-site.xml</strong>（设置副本数量和存储路径）：</li>
-        </ul>
-        <div class="code-block">
-            &lt;configuration&gt;<br>
-            &nbsp;&nbsp;&lt;property&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;name&gt;dfs.replication&lt;/name&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;value&gt;2&lt;/value&gt;<br>
-            &nbsp;&nbsp;&lt;/property&gt;<br>
-            &nbsp;&nbsp;&lt;property&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;name&gt;dfs.namenode.name.dir&lt;/name&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;value&gt;/usr/local/hadoop/data/nameNode&lt;/value&gt;<br>
-            &nbsp;&nbsp;&lt;/property&gt;<br>
-            &nbsp;&nbsp;&lt;property&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;name&gt;dfs.datanode.data.dir&lt;/name&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;value&gt;/usr/local/hadoop/data/dataNode&lt;/value&gt;<br>
-            &nbsp;&nbsp;&lt;/property&gt;<br>
-            &lt;/configuration&gt;
-        </div>
-
-        <ul>
-            <li><strong>yarn-site.xml</strong>（配置资源管理器）：</li>
-        </ul>
-        <div class="code-block">
-            &lt;configuration&gt;<br>
-            &nbsp;&nbsp;&lt;property&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;name&gt;yarn.resourcemanager.address&lt;/name&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;value&gt;master:8032&lt;/value&gt;<br>
-            &nbsp;&nbsp;&lt;/property&gt;<br>
-            &nbsp;&nbsp;&lt;property&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;value&gt;mapreduce_shuffle&lt;/value&gt;<br>
-            &nbsp;&nbsp;&lt;/property&gt;<br>
-            &lt;/configuration&gt;
-        </div>
-
-        <ul>
-            <li><strong>mapred-site.xml</strong>（指定MapReduce框架）：</li>
-        </ul>
-        <div class="code-block">
-            &lt;configuration&gt;<br>
-            &nbsp;&nbsp;&lt;property&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;name&gt;mapreduce.framework.name&lt;/name&gt;<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&lt;value&gt;yarn&lt;/value&gt;<br>
-            &nbsp;&nbsp;&lt;/property&gt;<br>
-            &lt;/configuration&gt;
-        </div>
-
-        <ul>
-            <li><strong>分发配置文件</strong>：将master节点配置同步到从节点：</li>
-        </ul>
-        <div class="code-block">
-            scp -r /usr/local/hadoop/etc/hadoop slave1:/usr/local/hadoop/etc/<br>
-            scp -r /usr/local/hadoop/etc/hadoop slave2:/usr/local/hadoop/etc/
-        </div>
-    </div>
-
-    <div class="section">
-        <h2>三、启动测试</h2>
-        <ol>
-            <li>
-                <strong>格式化HDFS</strong>：首次启动前执行初始化：
-                <div class="code-block">
-                    hdfs namenode -format
-                </div>
-            </li>
-            <li>
-                <strong>启动集群服务</strong>：
-                <ul>
-                    <li>启动HDFS：<code>start-dfs.sh</code></li>
-                    <li>启动YARN：<code>start-yarn.sh</code></li>
-                </ul>
-            </li>
-            <li>
-                <strong>验证服务状态</strong>：
-                <ul>
-                    <li>查看进程：<code>jps</code>，确保NameNode、DataNode、ResourceManager等进程正常运行。</li>
-                    <li>网页访问：打开浏览器访问 <code>http://master:9870</code>，查看HDFS管理界面。</li>
-                </ul>
-            </li>
-        </ol>
-    </div>
-
-    <div class="section">
-        <h2>四、HBase部署</h2>
+        // DOM元素
+        const navbar = document.getElementById('navbar');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const countryCountEl = document.getElementById('countryCount');
+        const avgHappinessEl = document.getElementById('avgHappiness');
+        const dataTableBody = document.getElementById('dataTableBody');
+        const showingRangeEl = document.getElementById('showingRange');
+        const totalItemsEl = document.getElementById('totalItems');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        const pageNumbersEl = document.getElementById('pageNumbers');
+        const countrySearchEl = document.getElementById('countrySearch');
+        const minHappinessEl = document.getElementById('minHappiness');
+        const maxHappinessEl = document.getElementById('maxHappiness');
+        const sortByEl = document.getElementById('sortBy');
+        const searchBtn = document.getElementById('searchBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const regionFilterEl = document.getElementById('regionFilter');
         
-        <h3>1. 安装准备</h3>
-        <ul>
-            <li><strong>下载解压</strong>：从阿里云镜像站下载HBase-2.5.7版本，执行解压命令：
-                <div class="code-block">
-                    tar -zxvf hbase-2.5.7-bin.tar.gz
-                </div>
-                移动到统一目录：
-                <div class="code-block">
-                    sudo mv hbase-2.5.7 /usr/local/hbase
-                </div>
-            </li>
-            <li><strong>环境变量配置</strong>：
-                <ul>
-                    <li>编辑 <code>~/.bashrc</code> 文件，添加：</li>
-                </ul>
-                <div class="code-block">
-                    export HBASE_HOME=/usr/local/hbase<br>
-                    export PATH=$PATH:$HBASE_HOME/bin
-                </div>
-                <ul>
-                    <li>使配置生效：</li>
-                </ul>
-                <div class="code-block">
-                    source ~/.bashrc
-                </div>
-            </li>
-        </ul>
-
-        <h3>2. 配置文件设置</h3>
-        <ul>
-            <li><strong>hbase-env.sh</strong>（配置JDK路径及HBase自管理ZooKeeper）：
-                <ul>
-                    <li>编辑文件：<code>vim /usr/local/hbase/conf/hbase-env.sh</code>，添加：</li>
-                </ul>
-                <div class="code-block">
-                    export JAVA_HOME=/usr/lib/jvm/default-java<br>
-                    export HBASE_MANAGES_ZK=true  # 启用HBase内置ZooKeeper
-                </div>
-            </li>
-            <li><strong>hbase-site.xml</strong>（配置HBase核心参数）：
-                <ul>
-                    <li>编辑文件：<code>vim /usr/local/hbase/conf/hbase-site.xml</code>，添加：</li>
-                </ul>
-                <div class="code-block">
-                    &lt;configuration&gt;<br>
-                    &nbsp;&nbsp;&lt;!-- 指定HBase在HDFS中的存储路径 --&gt;<br>
-                    &nbsp;&nbsp;&lt;property&gt;<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;name&gt;hbase.rootdir&lt;/name&gt;<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;value&gt;hdfs://master:9000/hbase&lt;/value&gt;<br>
-                    &nbsp;&nbsp;&lt;/property&gt;<br>
-                    &nbsp;&nbsp;&lt;!-- 启用分布式模式 --&gt;<br>
-                    &nbsp;&nbsp;&lt;property&gt;<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;name&gt;hbase.cluster.distributed&lt;/name&gt;<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;value&gt;true&lt;/value&gt;<br>
-                    &nbsp;&nbsp;&lt;/property&gt;<br>
-                    &nbsp;&nbsp;&lt;!-- 指定内置ZooKeeper节点 --&gt;<br>
-                    &nbsp;&nbsp;&lt;property&gt;<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;name&gt;hbase.zookeeper.quorum&lt;/name&gt;<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;value&gt;master,slave1,slave2&lt;/value&gt;<br>
-                    &nbsp;&nbsp;&lt;/property&gt;<br>
-                    &nbsp;&nbsp;&lt;!-- ZooKeeper数据存储路径 --&gt;<br>
-                    &nbsp;&nbsp;&lt;property&gt;<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;name&gt;hbase.zookeeper.property.dataDir&lt;/name&gt;<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;value&gt;/usr/local/hbase/zookeeper-data&lt;/value&gt;<br>
-                    &nbsp;&nbsp;&lt;/property&gt;<br>
-                    &lt;/configuration&gt;
-                </div>
-            </li>
-            <li><strong>regionservers</strong>（指定RegionServer节点）：
-                <ul>
-                    <li>编辑文件：<code>vim /usr/local/hbase/conf/regionservers</code>，添加从节点：</li>
-                </ul>
-                <div class="code-block">
-                    slave1<br>
-                    slave2
-                </div>
-            </li>
-            <li><strong>分发配置文件</strong>：将master节点的HBase配置同步到从节点：
-                <div class="code-block">
-                    scp -r /usr/local/hbase/conf slave1:/usr/local/hbase/<br>
-                    scp -r /usr/local/hbase/conf slave2:/usr/local/hbase/
-                </div>
-            </li>
-        </ul>
-
-        <h3>3. 启动与验证</h3>
-        <ul>
-            <li><strong>启动HBase</strong>：在master节点执行：
-                <div class="code-block">
-                    start-hbase.sh
-                </div>
-            </li>
-            <li><strong>查看进程</strong>：
-                <ul>
-                    <li>master节点执行 <code>jps</code>，应包含 <code>HMaster</code> 进程。</li>
-                    <li>从节点执行 <code>jps</code>，应包含 <code>HRegionServer</code> 进程。</li>
-                </ul>
-            </li>
-            <li><strong>网页验证</strong>：打开浏览器访问 <code>http://master:16010</code>，查看HBase管理界面，确认集群状态正常。</li>
-            <li><strong>命令行验证</strong>：执行 <code>hbase shell</code> 进入交互模式，输入 <code>status</code> 查看集群状态，返回节点信息即部署成功。</li>
-        </ul>
-    </div>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('py-2');
+                navbar.classList.remove('py-3');
+                navbar.classList.add('shadow-lg');
+            } else {
+                navbar.classList.add('py-3');
+                navbar.classList.remove('py-2');
+                navbar.classList.remove('shadow-lg');
+            }
+        });
+        
+        // 移动端菜单切换
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                // 关闭移动菜单（如果打开）
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                }
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // 加载数据
+        function loadData() {
+            // 模拟数据 - 实际项目中可以通过API获取
+            // 这里使用世界幸福指数数据
+            happinessData = [
+                {"排名":1,"国家或地区":"芬兰","地区":"欧洲","幸福指数":7.804,"GDP人均":1.842,"社会支持":1.582,"健康寿命":0.775,"生活自由度":0.736,"慷慨程度":0.124},
+                {"排名":2,"国家或地区":"丹麦","地区":"欧洲","幸福指数":7.646,"GDP人均":1.836,"社会支持":1.573,"健康寿命":0.777,"生活自由度":0.719,"慷慨程度":0.134},
+                {"排名":3,"国家或地区":"冰岛","地区":"欧洲","幸福指数":7.560,"GDP人均":1.803,"社会支持":1.624,"健康寿命":0.816,"生活自由度":0.751,"慷慨程度":0.226},
+                {"排名":4,"国家或地区":"瑞士","地区":"欧洲","幸福指数":7.512,"GDP人均":1.937,"社会支持":1.549,"健康寿命":0.822,"生活自由度":0.677,"慷慨程度":0.154},
+                {"排名":5,"国家或地区":"荷兰","地区":"欧洲","幸福指数":7.415,"GDP人均":1.826,"社会支持":1.522,"健康寿命":0.787,"生活自由度":0.699,"慷慨程度":0.211},
+                {"排名":6,"国家或地区":"卢森堡","地区":"欧洲","幸福指数":7.324,"GDP人均":2.070,"社会支持":1.456,"健康寿命":0.813,"生活自由度":0.653,"慷慨程度":0.138},
+                {"排名":7,"国家或地区":"瑞典","地区":"欧洲","幸福指数":7.314,"GDP人均":1.781,"社会支持":1.546,"健康寿命":0.796,"生活自由度":0.711,"慷慨程度":0.222},
+                {"排名":8,"国家或地区":"挪威","地区":"欧洲","幸福指数":7.292,"GDP人均":1.902,"社会支持":1.522,"健康寿命":0.802,"生活自由度":0.703,"慷慨程度":0.227},
+                {"排名":9,"国家或地区":"以色列","地区":"亚洲","幸福指数":7.267,"GDP人均":1.718,"社会支持":1.468,"健康寿命":0.761,"生活自由度":0.631,"慷慨程度":0.134},
+                {"排名":10,"国家或地区":"新西兰","地区":"大洋洲","幸福指数":7.200,"GDP人均":1.755,"社会支持":1.540,"健康寿命":0.795,"生活自由度":0.715,"慷慨程度":0.160},
+                {"排名":11,"国家或地区":"奥地利","地区":"欧洲","幸福指数":7.168,"GDP人均":1.828,"社会支持":1.505,"健康寿命":0.801,"生活自由度":0.668,"慷慨程度":0.185},
+                {"排名":12,"国家或地区":"澳大利亚","地区":"大洋洲","幸福指数":7.139,"GDP人均":1.775,"社会支持":1.534,"健康寿命":0.794,"生活自由度":0.701,"慷慨程度":0.168},
+                {"排名":13,"国家或地区":"加拿大","地区":"北美洲","幸福指数":7.025,"GDP人均":1.764,"社会支持":1.517,"健康寿命":0.779,"生活自由度":0.684,"慷慨程度":0.132},
+                {"排名":14,"国家或地区":"爱尔兰","地区":"欧洲","幸福指数":6.977,"GDP人均":1.944,"社会支持":1.482,"健康寿命":0.792,"生活自由度":0.667,"慷慨程度":0.140},
+                {"排名":15,"国家或地区":"德国","地区":"欧洲","幸福指数":6.921,"GDP人均":1.818,"社会支持":1.487,"健康寿命":0.807,"生活自由度":0.646,"慷慨程度":0.145},
+                {"排名":16,"国家或地区":"比利时","地区":"欧洲","幸福指数":6.891,"GDP人均":1.794,"社会支持":1.469,"健康寿命":0.805,"生活自由度":0.633,"慷慨程度":0.167},
+                {"排名":17,"国家或地区":"美国","地区":"北美洲","幸福指数":6.817,"GDP人均":1.857,"社会支持":1.427,"健康寿命":0.715,"生活自由度":0.631,"慷慨程度":0.104},
+                {"排名":18,"国家或地区":"英国","地区":"欧洲","幸福指数":6.795,"GDP人均":1.758,"社会支持":1.460,"健康寿命":0.762,"生活自由度":0.643,"慷慨程度":0.126},
+                {"排名":19,"国家或地区":"法国","地区":"欧洲","幸福指数":6.697,"GDP人均":1.768,"社会支持":1.435,"健康寿命":0.813,"生活自由度":0.584,"慷慨程度":0.131},
+                {"排名":20,"国家或地区":"捷克共和国","地区":"欧洲","幸福指数":6.652,"GDP人均":1.615,"社会支持":1.455,"健康寿命":0.759,"生活自由度":0.617,"慷慨程度":0.122},
+                {"排名":21,"国家或地区":"马耳他","地区":"欧洲","幸福指数":6.627,"GDP人均":1.685,"社会支持":1.465,"健康寿命":0.786,"生活自由度":0.609,"慷慨程度":0.184},
+                {"排名":22,"国家或地区":"韩国","地区":"亚洲","幸福指数":6.444,"GDP人均":1.741,"社会支持":1.379,"健康寿命":0.825,"生活自由度":0.557,"慷慨程度":0.087},
+                {"排名":23,"国家或地区":"哥斯达黎加","地区":"南美洲","幸福指数":6.373,"GDP人均":1.423,"社会支持":1.447,"健康寿命":0.740,"生活自由度":0.667,"慷慨程度":0.140},
+                {"排名":24,"国家或地区":"西班牙","地区":"欧洲","幸福指数":6.368,"GDP人均":1.644,"社会支持":1.415,"健康寿命":0.818,"生活自由度":0.624,"慷慨程度":0.163},
+                {"排名":25,"国家或地区":"阿联酋","地区":"亚洲","幸福指数":6.354,"GDP人均":1.942,"社会支持":1.383,"健康寿命":0.749,"生活自由度":0.523,"慷慨程度":0.252},
+                {"排名":26,"国家或地区":"意大利","地区":"欧洲","幸福指数":6.342,"GDP人均":1.637,"社会支持":1.426,"健康寿命":0.793,"生活自由度":0.532,"慷慨程度":0.118},
+                {"排名":27,"国家或地区":"沙特阿拉伯","地区":"亚洲","幸福指数":6.332,"GDP人均":1.815,"社会支持":1.407,"健康寿命":0.735,"生活自由度":0.462,"慷慨程度":0.277},
+                {"排名":28,"国家或地区":"日本","地区":"亚洲","幸福指数":6.295,"GDP人均":1.712,"社会支持":1.374,"健康寿命":0.838,"生活自由度":0.555,"慷慨程度":0.062},
+                {"排名":29,"国家或地区":"波兰","地区":"欧洲","幸福指数":6.286,"GDP人均":1.513,"社会支持":1.434,"健康寿命":0.739,"生活自由度":0.577,"慷慨程度":0.164},
+                {"排名":30,"国家或地区":"巴林","地区":"亚洲","幸福指数":6.278,"GDP人均":1.821,"社会支持":1.357,"健康寿命":0.732,"生活自由度":0.494,"慷慨程度":0.209},
+                {"排名":125,"国家或地区":"乌干达","地区":"非洲","幸福指数":3.315,"GDP人均":0.642,"社会支持":1.118,"健康寿命":0.451,"生活自由度":0.533,"慷慨程度":0.224},
+                {"排名":126,"国家或地区":"赞比亚","地区":"非洲","幸福指数":3.280,"GDP人均":0.612,"社会支持":1.094,"健康寿命":0.390,"生活自由度":0.443,"慷慨程度":0.181},
+                {"排名":127,"国家或地区":"坦桑尼亚","地区":"非洲","幸福指数":3.231,"GDP人均":0.526,"社会支持":1.065,"健康寿命":0.422,"生活自由度":0.477,"慷慨程度":0.246},
+                {"排名":128,"国家或地区":"海地","地区":"北美洲","幸福指数":3.145,"GDP人均":0.376,"社会支持":0.612,"健康寿命":0.321,"生活自由度":0.335,"慷慨程度":0.218},
+                {"排名":129,"国家或地区":"莱索托","地区":"非洲","幸福指数":3.127,"GDP人均":0.668,"社会支持":0.967,"健康寿命":0.319,"生活自由度":0.375,"慷慨程度":0.177},
+                {"排名":130,"国家或地区":"博茨瓦纳","地区":"非洲","幸福指数":3.083,"GDP人均":1.276,"社会支持":1.043,"健康寿命":0.412,"生活自由度":0.466,"慷慨程度":0.135},
+                {"排名":131,"国家或地区":"卢旺达","地区":"非洲","幸福指数":3.004,"GDP人均":0.491,"社会支持":1.060,"健康寿命":0.445,"生活自由度":0.517,"慷慨程度":0.252},
+                {"排名":132,"国家或地区":"津巴布韦","地区":"非洲","幸福指数":2.995,"GDP人均":0.532,"社会支持":0.976,"健康寿命":0.341,"生活自由度":0.367,"慷慨程度":0.151},
+                {"排名":133,"国家或地区":"南苏丹","地区":"非洲","幸福指数":2.818,"GDP人均":0.306,"社会支持":0.575,"健康寿命":0.222,"生活自由度":0.015,"慷慨程度":0.277},
+                {"排名":134,"国家或地区":"刚果（金）","地区":"非洲","幸福指数":2.774,"GDP人均":0.227,"社会支持":0.777,"健康寿命":0.282,"生活自由度":0.350,"慷慨程度":0.135},
+                {"排名":135,"国家或地区":"利比里亚","地区":"非洲","幸福指数":2.765,"GDP人均":0.295,"社会支持":0.717,"健康寿命":0.259,"生活自由度":0.376,"慷慨程度":0.218},
+                {"排名":136,"国家或地区":"布隆迪","地区":"非洲","幸福指数":2.759,"GDP人均":0.191,"社会支持":0.839,"健康寿命":0.361,"生活自由度":0.287,"慷慨程度":0.196},
+                {"排名":137,"国家或地区":"阿富汗","地区":"亚洲","幸福指数":2.404,"GDP人均":0.320,"社会支持":0.378,"健康寿命":0.257,"生活自由度":0.000,"慷慨程度":0.122}
+            ];
+            
+            // 计算亚洲国家数据
+            const asianCountries = [
+                {"国家或地区":"中国","地区":"亚洲","幸福指数":5.585,"GDP人均":1.456,"社会支持":1.414,"健康寿命":0.742,"生活自由度":0.538,"慷慨程度":0.082},
+                {"国家或地区":"印度","地区":"亚洲","幸福指数":3.777,"GDP人均":0.755,"社会支持":0.887,"健康寿命":0.509,"生活自由度":0.463,"慷慨程度":0.181},
+                {"国家或地区":"新加坡","地区":"亚洲","幸福指数":6.377,"GDP人均":2.016,"社会支持":1.441,"健康寿命":0.816,"生活自由度":0.542,"慷慨程度":0.154},
+                {"国家或地区":"泰国","地区":"亚洲","幸福指数":5.268,"GDP人均":1.240,"社会支持":1.311,"健康寿命":0.693,"生活自由度":0.592,"慷慨程度":0.163},
+                {"国家或地区":"马来西亚","地区":"亚洲","幸福指数":5.624,"GDP人均":1.425,"社会支持":1.336,"健康寿命":0.716,"生活自由度":0.567,"慷慨程度":0.182},
+                {"国家或地区":"印度尼西亚","地区":"亚洲","幸福指数":5.192,"GDP人均":1.093,"社会支持":1.246,"健康寿命":0.628,"生活自由度":0.553,"慷慨程度":0.174},
+                {"国家或地区":"菲律宾","地区":"亚洲","幸福指数":5.872,"GDP人均":1.020,"社会支持":1.307,"健康寿命":0.615,"生活自由度":0.597,"慷慨程度":0.222},
+                {"国家或地区":"越南","地区":"亚洲","幸福指数":5.411,"GDP人均":1.035,"社会支持":1.324,"健康寿命":0.666,"生活自由度":0.526,"慷慨程度":0.134},
+                {"国家或地区":"巴基斯坦","地区":"亚洲","幸福指数":4.506,"GDP人均":0.780,"社会支持":1.096,"健康寿命":0.523,"生活自由度":0.430,"慷慨程度":0.168},
+                {"国家或地区":"孟加拉国","地区":"亚洲","幸福指数":4.404,"GDP人均":0.661,"社会支持":1.068,"健康寿命":0.520,"生活自由度":0.467,"慷慨程度":0.176}
+            ];
+            
+            // 添加亚洲国家数据
+            happinessData = [...happinessData, ...asianCountries];
+            
+            // 按排名排序
+            happinessData.sort((a, b) => a.排名 - b.排名);
+            
+            // 初始化筛选数据
+            filteredData = [...happinessData];
+            
+            // 更新数据概览
+            updateOverview();
+            
+            // 渲染表格
+            renderTable();
+            
+            // 渲染图表
+            renderCharts();
+        }
+        
+        // 更新数据概览
+        function updateOverview() {
+            countryCountEl.textContent = happinessData.length;
+            
+            // 计算平均幸福指数
+            const totalHappiness = happinessData.reduce((sum, item) => sum + item.幸福指数, 0);
+            const avgHappiness = (totalHappiness / happinessData.length).toFixed(2);
+            avgHappinessEl.textContent = avgHappiness;
+        }
+        
+        // 渲染数据表格
+        function renderTable() {
+            // 计算分页
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredData.length);
+            const currentItems = filteredData.slice(startIndex, endIndex);
+            
+            // 更新表格内容
+            dataTableBody.innerHTML = '';
+            
+            if (currentItems.length === 0) {
+                dataTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-20 text-center text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <i class="fa fa-search text-3xl mb-4 text-gray-300"></i>
+                                <p>没有找到匹配的数据</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                currentItems.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50 transition-custom';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">${item.排名}</td>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium">${item.国家或地区}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${item.地区}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${item.幸福指数.toFixed(3)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${item.GDP人均.toFixed(3)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${item.社会支持.toFixed(3)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${item.健康寿命.toFixed(3)}</td>
+                    `;
+                    dataTableBody.appendChild(row);
+                });
+            }
+            
+            // 更新分页信息
+            showingRangeEl.textContent = filteredData.length > 0 ? `${startIndex + 1}-${endIndex}` : '0-0';
+            totalItemsEl.textContent = filteredData.length;
+            
+            // 更新分页按钮状态
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+            
+            // 渲染页码
+            renderPageNumbers(totalPages);
+        }
+        
+        // 渲染页码
+        function renderPageNumbers(totalPages) {
+            pageNumbersEl.innerHTML = '';
+            
+            // 最多显示5个页码
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            
+            // 调整起始页，确保显示5个页码（除非总页数少于5）
+            if (endPage - startPage < 4 && totalPages > 5) {
+                startPage = Math.max(1, endPage - 4);
+            }
+            
+            // 添加第一页按钮（如果需要）
+            if (startPage > 1) {
+                addPageNumber(1);
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'px-3 py-1 text-gray-500';
+                    ellipsis.textContent = '...';
+                    pageNumbersEl.appendChild(ellipsis);
+                }
+            }
+            
+            // 添加中间页码
+            for (let i = startPage; i <= endPage; i++) {
+                addPageNumber(i);
+            }
+            
+            // 添加最后一页按钮（如果需要）
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'px-3 py-1 text-gray-500';
+                    ellipsis.textContent = '...';
+                    pageNumbersEl.appendChild(ellipsis);
+                }
+                addPageNumber(totalPages);
+            }
+        }
+        
+        // 添加页码按钮
+        function addPageNumber(page) {
+            const button = document.createElement('button');
+            button.className = `px-3 py-1 rounded ${page === currentPage ? 'bg-primary text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}`;
+            button.textContent = page;
+            button.addEventListener('click', () => {
+                currentPage = page;
+                renderTable();
+            });
+            pageNumbersEl.appendChild(button);
+        }
+        
+        // 筛选数据
+        function filterData() {
+            const countrySearch = countrySearchEl.value.toLowerCase().trim();
+            const minHappiness = minHappinessEl.value ? parseFloat(minHappinessEl.value) : null;
+            const maxHappiness = maxHappinessEl.value ? parseFloat(maxHappinessEl.value) : null;
+            const regionFilter = regionFilterEl.value;
+            
+            // 重置当前页
+            currentPage = 1;
+            
+            // 应用筛选
+            filteredData = happinessData.filter(item => {
+                // 国家/地区筛选
+                const matchesCountry = countrySearch === '' || 
+                    item.国家或地区.toLowerCase().includes(countrySearch);
+                
+                // 幸福指数范围筛选
+                const matchesHappinessMin = minHappiness === null || item.幸福指数 >= minHappiness;
+                const matchesHappinessMax = maxHappiness === null || item.幸福指数 <= maxHappiness;
+                const matchesHappiness = matchesHappinessMin && matchesHappinessMax;
+                
+                // 地区筛选
+                const matchesRegion = regionFilter === 'all' || item.地区 === regionFilter;
+                
+                return matchesCountry && matchesHappiness && matchesRegion;
+            });
+            
+            // 应用排序
+            sortData();
+            
+            // 重新渲染表格
+            renderTable();
+        }
+        
+        // 排序数据
+        function sortData() {
+            const sortBy = sortByEl.value;
+            
+            switch (sortBy) {
+                case 'happiness-desc':
+                    filteredData.sort((a, b) => b.幸福指数 - a.幸福指数);
+                    break;
+                case 'happiness-asc':
+                    filteredData.sort((a, b) => a.幸福指数 - b.幸福指数);
+                    break;
+                case 'country-asc':
+                    filteredData.sort((a, b) => a.国家或地区.localeCompare(b.国家或地区));
+                    break;
+                case 'country-desc':
+                    filteredData.sort((a, b) => b.国家或地区.localeCompare(a.国家或地区));
+                    break;
+                case 'gdp-desc':
+                    filteredData.sort((a, b) => b.GDP人均 - a.GDP人均);
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+        // 重置筛选条件
+        function resetFilters() {
+            countrySearchEl.value = '';
+            minHappinessEl.value = '';
+            maxHappinessEl.value = '';
+            regionFilterEl.value = 'all';
+            sortByEl.value = 'happiness-desc';
+            
+            // 重置当前页
+            currentPage = 1;
+            
+            // 重置筛选数据
+            filteredData = [...happinessData];
+            
+            // 重新渲染表格
+            renderTable();
+        }
+        
+        // 渲染图表
+        function renderCharts() {
+            // 1. 幸福指数最高的10个国家
+            const topCountries = [...happinessData].sort((a, b) => b.幸福指数 - a.幸福指数).slice(0, 10);
+            const topCountriesCtx = document.getElementById('topCountriesChart').getContext('2d');
+            
+            new Chart(topCountriesCtx, {
+                type: 'bar',
+                data: {
+                    labels: topCountries.map(item => item.国家或地区),
+                    datasets: [{
+                        label: '幸福指数',
+                        data: topCountries.map(item => item.幸福指数),
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            title: {
+                                display: true,
+                                text: '幸福指数 (0-10)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // 2. GDP与幸福指数的关系
+            const gdpHappinessCtx = document.getElementById('gdpHappinessChart').getContext('2d');
+            
+            new Chart(gdpHappinessCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '国家/地区',
+                        data: happinessData.map(item => ({
+                            x: item.GDP人均,
+                            y: item.幸福指数
+                        })),
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '人均GDP'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '幸福指数'
+                            },
+                            min: 0,
+                            max: 10
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const index = context.dataIndex;
+                                    return `${happinessData[index].国家或地区}: 幸福指数 ${happinessData[index].幸福指数.toFixed(2)}, GDP ${happinessData[index].GDP人均.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 3. 影响幸福指数的因素占比
+            const factorsCtx = document.getElementById('factorsChart').getContext('2d');
+            
+            // 计算各因素的平均值
+            const avgGDP = happinessData.reduce((sum, item) => sum + item.GDP人均, 0) / happinessData.length;
+            const avgSupport = happinessData.reduce((sum, item) => sum + item.社会支持, 0) / happinessData.length;
+            const avgHealth = happinessData.reduce((sum, item) => sum + item.健康寿命, 0) / happinessData.length;
+            const avgFreedom = happinessData.reduce((sum, item) => sum + item.生活自由度, 0) / happinessData.length;
+            const avgGenerosity = happinessData.reduce((sum, item) => sum + item.慷慨程度, 0) / happinessData.length;
+            
+            // 计算总和用于归一化
+            const total = avgGDP + avgSupport + avgHealth + avgFreedom + avgGenerosity;
+            
+            new Chart(factorsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['GDP人均', '社会支持', '健康寿命', '生活自由度', '慷慨程度'],
+                    datasets: [{
+                        data: [
+                            (avgGDP / total) * 100,
+                            (avgSupport / total) * 100,
+                            (avgHealth / total) * 100,
+                            (avgFreedom / total) * 100,
+                            (avgGenerosity / total) * 100
+                        ],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(139, 92, 246, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(239, 68, 68, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value.toFixed(1)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 4. 各地区幸福指数比较
+            const regionComparisonCtx = document.getElementById('regionComparisonChart').getContext('2d');
+            
+            // 按地区分组并计算平均值
+            const regions = {};
+            happinessData.forEach(item => {
+                if (!regions[item.地区]) {
+                    regions[item.地区] = {
+                        count: 0,
+                        happiness: 0,
+                        gdp: 0,
+                        support: 0,
+                        health: 0,
+                        freedom: 0,
+                        generosity: 0
+                    };
+                }
+                
+                regions[item.地区].count++;
+                regions[item.地区].happiness += item.幸福指数;
+                regions[item.地区].gdp += item.GDP人均;
+                regions[item.地区].support += item.社会支持;
+                regions[item.地区].health += item.健康寿命;
+                regions[item.地区].freedom += item.生活自由度;
+                regions[item.地区].generosity += item.慷慨程度;
+            });
+            
+            // 计算平均值
+            const regionNames = Object.keys(regions);
+            const regionAverages = regionNames.map(region => {
+                const data = regions[region];
+                return {
+                    region,
+                    happiness: data.happiness / data.count,
+                    gdp: data.gdp / data.count,
+                    support: data.support / data.count,
+                    health: data.health / data.count,
+                    freedom: data.freedom / data.count,
+                    generosity: data.generosity / data.count
+                };
+            });
+            
+            // 按幸福指数排序
+            regionAverages.sort((a, b) => b.happiness - a.happiness);
+            
+            new Chart(regionComparisonCtx, {
+                type: 'radar',
+                data: {
+                    labels: regionAverages.map(ra => ra.region),
+                    datasets: [
+                        {
+                            label: '幸福指数',
+                            data: regionAverages.map(ra => ra.happiness),
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                        },
+                        {
+                            label: 'GDP人均',
+                            data: regionAverages.map(ra => ra.gdp),
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(16, 185, 129, 1)'
+                        },
+                        {
+                            label: '社会支持',
+                            data: regionAverages.map(ra => ra.support),
+                            backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                            borderColor: 'rgba(139, 92, 246, 1)',
+                            pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(139, 92, 246, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 8
+                        }
+                    }
+                }
+            });
+            
+            // 5. 全球幸福指数分布（使用气泡图模拟地图）
+            const happinessMapCtx = document.getElementById('happinessMapChart').getContext('2d');
+            
+            // 为了模拟世界地图分布，随机生成x和y坐标
+            const mapData = happinessData.map(item => ({
+                ...item,
+                x: Math.random() * 100,
+                y: Math.random() * 100
+            }));
+            
+            new Chart(happinessMapCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '幸福指数',
+                        data: mapData.map(item => ({
+                            x: item.x,
+                            y: item.y
+                        })),
+                        backgroundColor: mapData.map(item => {
+                            // 根据幸福指数设置颜色
+                            const value = (item.幸福指数 / 10) * 100;
+                            return `hsla(217, 91%, ${50 - value/2}%, 0.7)`;
+                        }),
+                        pointRadius: mapData.map(item => {
+                            // 根据国家重要性设置点大小（这里简单使用固定大小）
+                            return 4;
+                        }),
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            display: false
+                        },
+                        y: {
+                            display: false
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const index = context.dataIndex;
+                                    return `${mapData[index].国家或地区}: 幸福指数 ${mapData[index].幸福指数.toFixed(2)}`;
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 事件监听
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        });
+        
+        nextPageBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        });
+        
+        searchBtn.addEventListener('click', filterData);
+        resetBtn.addEventListener('click', resetFilters);
+        sortByEl.addEventListener('change', () => {
+            sortData();
+            renderTable();
+        });
+        regionFilterEl.addEventListener('change', filterData);
+        
+        // 页面加载完成后加载数据
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
 </body>
 </html>
